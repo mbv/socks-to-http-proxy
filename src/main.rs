@@ -8,7 +8,7 @@ use hyper::{Body, Client, Request, Response, Server};
 use hyper_socks2::{Auth, SocksConnector};
 use log::debug;
 use std::convert::Infallible;
-use std::net::{Ipv4Addr, SocketAddr};
+use std::net::{Ipv4Addr, SocketAddr, ToSocketAddrs};
 use tokio_socks::tcp::Socks5Stream;
 use tokio_socks::{IntoTargetAddr, ToProxyAddrs};
 
@@ -24,7 +24,7 @@ struct Cli {
 
     /// Socks5 proxy address
     #[clap(short, long, default_value = "127.0.0.1:1080")]
-    socks_address: SocketAddr,
+    socks_address: String,
 
     /// Socks5 username
     #[clap(short = 'u', long)]
@@ -41,7 +41,7 @@ async fn main() -> Result<()> {
     color_eyre::install()?;
 
     let args = Cli::parse();
-    let socks_address = args.socks_address;
+    let socks_address = args.socks_address.to_socket_addrs().unwrap().next().unwrap();
     let port = args.port;
 
     let username = args.username;
